@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhoneIntel — Phone Number Intelligence</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>&gt;_ Phone<span class="accent">Intel</span></h1>
+      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data. No tracking, no external lookups.</p>
+    </header>
+
+    <form id="lookup-form" autocomplete="off">
+      <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
+      <button type="submit">Analyse</button>
+    </form>
+    <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
+
+    <div id="error" class="error hidden"></div>
+
+    <section id="results" class="hidden">
+      <div class="card verdict">
+        <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
+        <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
+        <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Number</h2>
+          <dl>
+            <dt>Country code</dt><dd id="r-cc"></dd>
+            <dt>National number</dt><dd id="r-national"></dd>
+            <dt>Region</dt><dd id="r-region"></dd>
+          </dl>
+        </div>
+        <div class="card">
+          <h2>Location &amp; Network</h2>
+          <dl>
+            <dt>Location (numbering plan)</dt><dd id="r-location"></dd>
+            <dt>Carrier</dt><dd id="r-carrier"></dd>
+            <dt>Timezone(s)</dt><dd id="r-tz"></dd>
+          </dl>
+        </div>
+        <div class="card wide">
+          <h2>Formats</h2>
+          <dl>
+            <dt>E.164</dt><dd id="r-e164"></dd>
+            <dt>International</dt><dd id="r-intl"></dd>
+            <dt>National</dt><dd id="r-nat"></dd>
+            <dt>RFC 3966</dt><dd id="r-rfc"></dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>100% offline — analysis uses only the public numbering-plan data bundled with the <code>phonenumbers</code> library. This tool does not track live locations or check accounts on other services.</p>
+    </footer>
+  </main>
+
+  <script>
+    const form = document.getElementById('lookup-form');
+    const errorBox = document.getElementById('error');
+    const results = document.getElementById('results');
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+    function setBool(id, value) {
+      const el = document.getElementById(id);
+      el.textContent = value ? 'Yes' : 'No';
+      el.classList.toggle('yes', value);
+      el.classList.toggle('no', !value);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const number = document.getElementById('number').value.trim();
+      errorBox.classList.add('hidden');
+      results.classList.add('hidden');
+
+      const resp = await fetch('/api/lookup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({number})
+      });
+      const payload = await resp.json();
+
+      if (!payload.success) {
+        errorBox.textContent = payload.error || 'Lookup failed.';
+        errorBox.classList.remove('hidden');
+        return;
+      }
+
+      const d = payload.data;
+      setBool('r-valid', d.is_valid);
+      setBool('r-possible', d.is_possible);
+      setText('r-type', d.number_type);
+      setText('r-cc', '+' + d.country_code);
+      setText('r-national', d.national_number);
+      setText('r-region', d.region_code);
+      setText('r-location', d.location);
+      setText('r-carrier', d.carrier);
+      setText('r-tz', d.timezones.length ? d.timezones.join(', ') : 'Unknown');
+      setText('r-e164', d.formats.e164);
+      setText('r-intl', d.formats.international);
+      setText('r-nat', d.formats.national);
+      setText('r-rfc', d.formats.rfc3966);
+      results.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
