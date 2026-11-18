@@ -89,6 +89,15 @@
               <dt>RFC 3966</dt><dd id="r-rfc"></dd>
             </dl>
           </div>
+          <div class="card wide">
+            <h2>Public OSINT — Search Links</h2>
+            <p class="hint">Google dork links for this number (PhoneInfoga's patterns). These are links only — open one to see what Google has publicly indexed. Nothing was fetched by PhoneIntel.</p>
+            <div id="osint-links"></div>
+          </div>
+          <div class="card wide">
+            <h2>OVH Number Zones</h2>
+            <div id="ovh-result"><p class="hint">Checking OVH's public zones…</p></div>
+          </div>
         </div>
       </section>
     </section>
@@ -156,7 +165,7 @@
 
     <footer>
       <p>Phone analysis is 100% in-browser — it uses only the public numbering-plan data bundled with the google-libphonenumber library. IP lookups use the free ipwho.is API. This tool does not track live locations, check accounts on other services, or extract phone numbers from social media.</p>
-      <p>Static-version limits: carrier lookup is not included in the JavaScript library (use the Python/Flask app in this repo for carrier data); timezones are an approximate region-level mapping, not a per-number lookup; location is country-level only; username checking is not possible from a static page (see the Username Tracker tab).</p>
+      <p>Static-version limits: carrier lookup is not included in the JavaScript library (use the Python/Flask app in this repo for carrier data); timezones are an approximate region-level mapping, not a per-number lookup; location is country-level only; username checking is not possible from a static page (see the Username Tracker tab). The full investigation report and PDF export also need the Python backend.</p>
     </footer>
   </main>
 </body>

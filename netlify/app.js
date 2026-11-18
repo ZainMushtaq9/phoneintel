@@ -162,6 +162,167 @@
     };
   }
 
+  /* ---- Public OSINT dork links (PhoneInfoga googlesearch patterns) ----
+   * Pure string building: generates Google search URLs for the number.
+   * Nothing is fetched here — the user opens a link to see what Google
+   * has publicly indexed. Same categories and URL format as the
+   * Python backend (verified against PhoneInfoga's own test vectors).
+   */
+  var DISPOSABLE_SMS_SITES = [
+    'hs3x.com', 'receive-sms-now.com', 'smslisten.com',
+    'smsnumbersonline.com', 'freesmscode.com', 'catchsms.com',
+    'smstibo.com', 'smsreceiving.com', 'getfreesmsnumber.com',
+    'sellaite.com', 'receive-sms-online.info', 'receivesmsonline.com',
+    'receive-a-sms.com', 'sms-receive.net', 'receivefreesms.com',
+    'receive-sms.com', 'receivetxt.com', 'freephonenum.com',
+    'freesmsverification.com', 'receive-sms-online.com', 'smslive.co'
+  ];
+
+  var FILE_EXTENSIONS = [
+    'doc', 'docx', 'odt', 'pdf', 'rtf', 'sxw', 'psw', 'ppt', 'pptx',
+    'pps', 'csv', 'txt', 'xls'
+  ];
+
+  function dorkUrl(dork) {
+    // Matches Python quote_plus exactly: encodeURIComponent leaves
+    // ( ) ! ' * unescaped, quote_plus percent-encodes them.
+    return 'https://www.google.com/search?q=' + encodeURIComponent(dork)
+      .replace(/%20/g, '+')
+      .replace(/\(/g, '%28').replace(/\)/g, '%29')
+      .replace(/!/g, '%21').replace(/'/g, '%27').replace(/\*/g, '%2A');
+  }
+
+  function intext() {
+    var parts = [];
+    for (var i = 0; i < arguments.length; i++) {
+      parts.push('intext:"' + arguments[i] + '"');
+    }
+    return parts.join(' | ');
+  }
+
+  function buildDorks(d) {
+    var e164 = d.formats.e164;
+    var intl = e164.replace(/\+/g, '');
+    var rawLocal = d.formats.national.replace(/\D/g, '');
+    var localFmt = d.formats.national;
+
+    function link(dork) {
+      return { dork: dork, url: dorkUrl(dork) };
+    }
+
+    var social = ['facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com', 'vk.com']
+      .map(function (site) {
+        return link('site:' + site + ' ' + intext(intl, e164, rawLocal));
+      });
+
+    var disposable = [link('site:hs3x.com intext:"' + intl + '"')];
+    DISPOSABLE_SMS_SITES.slice(1).forEach(function (site) {
+      disposable.push(link('site:' + site + ' ' + intext(intl, rawLocal)));
+    });
+
+    var reputation = [
+      link('site:whosenumber.info intext:"' + e164 + '" intitle:"who called"'),
+      link('intitle:"Phone Fraud" ' + intext(intl, e164, rawLocal)),
+      link('site:findwhocallsme.com intext:"' + e164 + '" | intext:"' + intl + '"'),
+      link('site:yellowpages.ca intext:"' + e164 + '"'),
+      link('site:phonenumbers.ie intext:"' + e164 + '"'),
+      link('site:who-calledme.com intext:"' + e164 + '"'),
+      link('site:usphonesearch.net intext:"' + rawLocal + '"'),
+      link('site:whocalled.us inurl:' + rawLocal),
+      link('site:quinumero.info intext:"' + rawLocal + '" | intext:"' + intl + '"'),
+      link('site:uk.popularphotolook.com inurl:' + rawLocal)
+    ];
+
+    var individuals = ['numinfo.net', 'sync.me', 'pastebin.com', 'whycall.me', 'locatefamily.com']
+      .map(function (site) {
+        return link('site:' + site + ' ' + intext(intl, e164, rawLocal));
+      });
+    individuals.push(link('site:whocallsyou.de intext:"' + rawLocal + '"'));
+    individuals.push(link('site:spytox.com intext:"' + rawLocal + '"'));
+
+    var filetypes = '(' + FILE_EXTENSIONS.map(function (e) { return 'ext:' + e; }).join(' | ') + ')';
+    var general = [
+      link(intext(intl, e164, rawLocal, localFmt)),
+      link(filetypes + ' ' + intext(intl, e164, rawLocal))
+    ];
+
+    return {
+      social_media: social,
+      disposable_providers: disposable,
+      reputation: reputation,
+      individuals: individuals,
+      general: general
+    };
+  }
+
+  function renderOsint(d) {
+    var box = document.getElementById('osint-links');
+    if (!box) return;
+    var cats = buildDorks(d);
+    var total = 0;
+    var html = '';
+    Object.keys(cats).forEach(function (cat) {
+      var links = cats[cat];
+      total += links.length;
+      html += '<details><summary>' + cat.replace(/_/g, ' ') + ' (' + links.length + ' links)</summary><ul class="dork-list">';
+      links.forEach(function (l) {
+        html += '<li><a href="' + l.url.replace(/&/g, '&amp;') + '" target="_blank" rel="noopener">'
+          + l.dork.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</a></li>';
+      });
+      html += '</ul></details>';
+    });
+    box.innerHTML = '<p class="hint">' + total + ' search links generated.</p>' + html;
+  }
+
+  /* ---- OVH number zones (PhoneInfoga OVH scanner) ----
+   * The OVH API sends Access-Control-Allow-Origin: *, so a browser
+   * fetch works (verified). Only FR/BE/GB/ES/CH are covered. */
+  var OVH_COUNTRIES = { 33: 'fr', 32: 'be', 44: 'gb', 34: 'es', 41: 'ch' };
+
+  function runOvh(d) {
+    var box = document.getElementById('ovh-result');
+    if (!box) return;
+    var countryIso = OVH_COUNTRIES[d.countryCode];
+    if (!countryIso) {
+      box.innerHTML = '<p class="hint">Not available — OVH publishes number zones only for France, Belgium, United Kingdom, Spain and Switzerland.</p>';
+      return;
+    }
+    var rawLocal = d.formats.national.replace(/\D/g, '');
+    if (rawLocal.length <= 6) {
+      box.innerHTML = '<p class="hint">Not available — this number is too short for range matching.</p>';
+      return;
+    }
+    box.innerHTML = '<p class="hint">Checking OVH\u2019s public zones…</p>';
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, 20000);
+    fetch('https://api.ovh.com/1.0/telephony/number/detailedZones?country=' + countryIso,
+      { signal: controller.signal })
+      .then(function (resp) {
+        if (!resp.ok) throw new Error('OVH API returned HTTP ' + resp.status + '.');
+        return resp.json();
+      })
+      .then(function (zones) {
+        clearTimeout(timer);
+        var key = rawLocal.slice(0, 6) + 'xxxx';
+        var match = null;
+        for (var i = 0; i < zones.length; i++) {
+          if (zones[i].number === key) { match = zones[i]; break; }
+        }
+        if (match) {
+          box.innerHTML = '<dl><dt>Number range</dt><dd>' + match.number + '</dd>'
+            + '<dt>City</dt><dd>' + (match.city || 'Unknown') + '</dd>'
+            + '<dt>ZIP code</dt><dd>' + (match.zipCode || 'Unknown') + '</dd></dl>'
+            + '<p class="hint">The range is listed in OVH\u2019s published zones. The city is the zone the range is assigned to — not a live position.</p>';
+        } else {
+          box.innerHTML = '<p class="hint">Range ' + key + ' was not found in OVH\u2019s published zones. OVH zones cover only part of the numbering plan, so this does not mean the number is unassigned.</p>';
+        }
+      })
+      .catch(function (err) {
+        clearTimeout(timer);
+        box.innerHTML = '<div class="error">OVH lookup failed: ' + (err && err.message ? err.message : 'request failed.') + '</div>';
+      });
+  }
+
   function setText(id, value) {
     document.getElementById(id).textContent = value;
   }
@@ -207,6 +368,8 @@
       setText('r-nat', d.formats.national);
       setText('r-rfc', d.formats.rfc3966);
       results.classList.remove('hidden');
+      renderOsint(d);
+      runOvh(d);
     });
   }
 
@@ -322,11 +485,13 @@
     }
   }
 
-  /* Expose the pure data tables for node-based testing. */
+  /* Expose the pure data tables and dork builder for node-based testing. */
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       REGION_TIMEZONES: REGION_TIMEZONES,
-      NUMBER_TYPE_NAMES: NUMBER_TYPE_NAMES
+      NUMBER_TYPE_NAMES: NUMBER_TYPE_NAMES,
+      buildDorks: buildDorks,
+      OVH_COUNTRIES: OVH_COUNTRIES
     };
   }
 

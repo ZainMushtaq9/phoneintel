@@ -1,0 +1,17 @@
+# PhoneIntel API — Cloudflare Workers (free tier).
+#
+# Deploys the investigation API as a Worker at
+# https://phoneintel.<your-subdomain>.workers.dev (no custom domain
+# needed). No API keys, no secrets, no KV, no Durable Objects — the
+# Worker only calls free, keyless public APIs (ipwho.is, OVH zones).
+#
+# Deploy (needs a free Cloudflare account; first run `npx wrangler
+# login` and approve in the browser, or set CLOUDFLARE_API_TOKEN):
+#   cd workers && npm install && npm run deploy
+# After deploying, put the Worker URL in ../docs/config.js so the
+# GitHub Pages frontend can call it.
+
+name = "phoneintel"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+workers_dev = true

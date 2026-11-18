@@ -3,114 +3,129 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PhoneIntel — Phone Number Intelligence</title>
+  <title>PhoneIntel — Phone Number OSINT Investigation</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <main class="container">
     <header>
       <h1>&gt;_ Phone<span class="accent">Intel</span></h1>
-      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data — plus GhostTrack-style IP and username lookups. No tracking, no account probing.</p>
+      <p class="tagline">Real phone-number OSINT investigation. Enter a number, run the analysis modules, get one report with a status, source and confidence for every finding. No tracking, no account probing, no fabricated results.</p>
     </header>
 
     <nav class="tabs">
-      <button class="tab-btn active" data-tab="tab-phone">Phone Lookup</button>
-      <button class="tab-btn" data-tab="tab-ip">IP Tracker</button>
+      <button class="tab-btn active" data-tab="tab-investigate">Investigation</button>
       <button class="tab-btn" data-tab="tab-username">Username Tracker</button>
     </nav>
 
-    <!-- ======================= PHONE ======================= -->
-    <section id="tab-phone" class="tab-panel">
-      <form id="lookup-form" autocomplete="off">
-        <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
-        <button type="submit">Analyse</button>
-      </form>
-      <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
-
-      <div id="error" class="error hidden"></div>
-
-      <section id="results" class="hidden">
-        <div class="card verdict">
-          <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
-          <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
-          <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
+    <!-- ======================= INVESTIGATION ======================= -->
+    <section id="tab-investigate" class="tab-panel">
+      <form id="investigate-form" autocomplete="off">
+        <div class="form-row">
+          <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
+          <select id="country" name="country" aria-label="Country (only needed if the number has no +code)">
+            <option value="">Auto — number includes +code</option>
+            <option value="PK">Pakistan (+92)</option>
+            <option value="IN">India (+91)</option>
+            <option value="US">United States (+1)</option>
+            <option value="GB">United Kingdom (+44)</option>
+            <option value="CA">Canada (+1)</option>
+            <option value="AU">Australia (+61)</option>
+            <option value="DE">Germany (+49)</option>
+            <option value="FR">France (+33)</option>
+            <option value="ES">Spain (+34)</option>
+            <option value="IT">Italy (+39)</option>
+            <option value="NL">Netherlands (+31)</option>
+            <option value="BE">Belgium (+32)</option>
+            <option value="CH">Switzerland (+41)</option>
+            <option value="AT">Austria (+43)</option>
+            <option value="SE">Sweden (+46)</option>
+            <option value="NO">Norway (+47)</option>
+            <option value="DK">Denmark (+45)</option>
+            <option value="FI">Finland (+358)</option>
+            <option value="PL">Poland (+48)</option>
+            <option value="PT">Portugal (+351)</option>
+            <option value="GR">Greece (+30)</option>
+            <option value="CZ">Czechia (+420)</option>
+            <option value="HU">Hungary (+36)</option>
+            <option value="RO">Romania (+40)</option>
+            <option value="UA">Ukraine (+380)</option>
+            <option value="TR">Turkey (+90)</option>
+            <option value="RU">Russia (+7)</option>
+            <option value="AE">UAE (+971)</option>
+            <option value="SA">Saudi Arabia (+966)</option>
+            <option value="QA">Qatar (+974)</option>
+            <option value="KW">Kuwait (+965)</option>
+            <option value="BH">Bahrain (+973)</option>
+            <option value="OM">Oman (+968)</option>
+            <option value="JO">Jordan (+962)</option>
+            <option value="EG">Egypt (+20)</option>
+            <option value="MA">Morocco (+212)</option>
+            <option value="NG">Nigeria (+234)</option>
+            <option value="KE">Kenya (+254)</option>
+            <option value="ZA">South Africa (+27)</option>
+            <option value="CN">China (+86)</option>
+            <option value="JP">Japan (+81)</option>
+            <option value="KR">South Korea (+82)</option>
+            <option value="TW">Taiwan (+886)</option>
+            <option value="HK">Hong Kong (+852)</option>
+            <option value="SG">Singapore (+65)</option>
+            <option value="MY">Malaysia (+60)</option>
+            <option value="ID">Indonesia (+62)</option>
+            <option value="TH">Thailand (+66)</option>
+            <option value="VN">Vietnam (+84)</option>
+            <option value="PH">Philippines (+63)</option>
+            <option value="BD">Bangladesh (+880)</option>
+            <option value="LK">Sri Lanka (+94)</option>
+            <option value="NP">Nepal (+977)</option>
+            <option value="AF">Afghanistan (+93)</option>
+            <option value="IQ">Iraq (+964)</option>
+            <option value="IR">Iran (+98)</option>
+            <option value="AR">Argentina (+54)</option>
+            <option value="BR">Brazil (+55)</option>
+            <option value="CL">Chile (+56)</option>
+            <option value="CO">Colombia (+57)</option>
+            <option value="PE">Peru (+51)</option>
+            <option value="MX">Mexico (+52)</option>
+            <option value="NZ">New Zealand (+64)</option>
+            <option value="IE">Ireland (+353)</option>
+            <option value="IL">Israel (+972)</option>
+          </select>
         </div>
+        <div class="form-row">
+          <input type="text" id="ip" name="ip" placeholder="Optional IP for IP Intelligence, e.g. 8.8.8.8">
+          <span class="my-ip-inline">Your IP: <span id="my-ip">…</span> <button type="button" id="use-my-ip" class="link-btn">use it</button></span>
+        </div>
+        <label class="consent">
+          <input type="checkbox" id="consent" name="consent">
+          I confirm I am authorised to investigate this number and will use the results lawfully.
+        </label>
+        <button type="submit" id="start-btn">Start Investigation</button>
+      </form>
+      <p class="hint">The number is analysed against the public numbering plan only. A valid format does not prove an active subscriber, and no live location, address or identity is ever returned. Results are not stored — the report lives only in your browser.</p>
 
-        <div class="grid">
-          <div class="card">
-            <h2>Number</h2>
-            <dl>
-              <dt>Country code</dt><dd id="r-cc"></dd>
-              <dt>National number</dt><dd id="r-national"></dd>
-              <dt>Region</dt><dd id="r-region"></dd>
-            </dl>
-          </div>
-          <div class="card">
-            <h2>Location &amp; Network</h2>
-            <dl>
-              <dt>Location (numbering plan)</dt><dd id="r-location"></dd>
-              <dt>Carrier</dt><dd id="r-carrier"></dd>
-              <dt>Timezone(s)</dt><dd id="r-tz"></dd>
-            </dl>
-          </div>
-          <div class="card wide">
-            <h2>Formats</h2>
-            <dl>
-              <dt>E.164</dt><dd id="r-e164"></dd>
-              <dt>International</dt><dd id="r-intl"></dd>
-              <dt>National</dt><dd id="r-nat"></dd>
-              <dt>RFC 3966</dt><dd id="r-rfc"></dd>
-            </dl>
-          </div>
+      <div id="inv-error" class="error hidden"></div>
+
+      <section id="progress" class="hidden">
+        <div class="card">
+          <h2>Investigation running…</h2>
+          <ul id="progress-list" class="progress-list"></ul>
         </div>
       </section>
-    </section>
 
-    <!-- ======================= IP ======================= -->
-    <section id="tab-ip" class="tab-panel hidden">
-      <form id="ip-form" autocomplete="off">
-        <input type="text" id="ip" name="ip" placeholder="8.8.8.8" required>
-        <button type="submit">Track IP</button>
-      </form>
-      <p class="hint">Enter a public IP address (IPv4 or IPv6). Geolocation comes from the free ipwho.is API — it shows where the IP is registered, not a live position.
-        <span id="my-ip-line">Your IP: <span id="my-ip">…</span> <button type="button" id="use-my-ip" class="link-btn">look it up</button></span>
-      </p>
-
-      <div id="ip-error" class="error hidden"></div>
-
-      <section id="ip-results" class="hidden">
-        <div class="grid">
-          <div class="card">
-            <h2>Location</h2>
-            <dl>
-              <dt>Country</dt><dd id="ip-country"></dd>
-              <dt>Region</dt><dd id="ip-region"></dd>
-              <dt>City</dt><dd id="ip-city"></dd>
-              <dt>Postal</dt><dd id="ip-postal"></dd>
-              <dt>Coordinates</dt><dd id="ip-coords"></dd>
-              <dt>Map</dt><dd><a id="ip-maps" href="#" target="_blank" rel="noopener">Open in Google Maps</a></dd>
-            </dl>
-          </div>
-          <div class="card">
-            <h2>Network</h2>
-            <dl>
-              <dt>IP</dt><dd id="ip-addr"></dd>
-              <dt>Type</dt><dd id="ip-type"></dd>
-              <dt>ISP</dt><dd id="ip-isp"></dd>
-              <dt>Organisation</dt><dd id="ip-org"></dd>
-              <dt>ASN</dt><dd id="ip-asn"></dd>
-              <dt>Domain</dt><dd id="ip-domain"></dd>
-            </dl>
-          </div>
-          <div class="card wide">
-            <h2>More</h2>
-            <dl>
-              <dt>Timezone</dt><dd id="ip-tz"></dd>
-              <dt>Local time</dt><dd id="ip-time"></dd>
-              <dt>Calling code</dt><dd id="ip-calling"></dd>
-              <dt>Capital</dt><dd id="ip-capital"></dd>
-            </dl>
-          </div>
+      <section id="inv-results" class="hidden">
+        <div class="card verdict">
+          <div class="verdict-item"><span class="label">Success</span><span id="s-success" class="value yes"></span></div>
+          <div class="verdict-item"><span class="label">Partial</span><span id="s-partial" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Not available</span><span id="s-na" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Failed</span><span id="s-failed" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Not supported</span><span id="s-ns" class="value"></span></div>
+        </div>
+        <p class="hint" id="report-meta"></p>
+        <div id="module-cards"></div>
+        <div class="export-row">
+          <button type="button" id="export-json" class="btn-secondary">Export JSON</button>
+          <button type="button" id="export-pdf" class="btn-secondary">Export PDF</button>
         </div>
       </section>
     </section>
@@ -142,7 +157,7 @@
     </section>
 
     <footer>
-      <p>Phone analysis is 100% offline — it uses only the public numbering-plan data bundled with the <code>phonenumbers</code> library. IP lookups use the free ipwho.is API; username checks only test whether a public profile URL responds. This tool does not track live locations, check accounts on other services, or extract phone numbers from social media.</p>
+      <p>PhoneIntel provides privacy-respecting phone-number analysis. It does not identify private social-media accounts, enumerate registrations or access restricted personal information. Phone analysis is offline (public numbering-plan data); IP lookups use the free ipwho.is API; OVH zone checks use OVH's public API; username checks only test whether a public profile URL responds.</p>
     </footer>
   </main>
 
@@ -157,14 +172,13 @@
       });
     });
 
+    function esc(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
     function setText(id, value) {
       document.getElementById(id).textContent = value;
-    }
-    function setBool(id, value) {
-      const el = document.getElementById(id);
-      el.textContent = value ? 'Yes' : 'No';
-      el.classList.toggle('yes', value);
-      el.classList.toggle('no', !value);
     }
     async function postJson(url, body) {
       const resp = await fetch(url, {
@@ -174,82 +188,223 @@
       });
       return resp.json();
     }
-
-    // ---- phone lookup (unchanged) ----
-    const form = document.getElementById('lookup-form');
-    const errorBox = document.getElementById('error');
-    const results = document.getElementById('results');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const number = document.getElementById('number').value.trim();
-      errorBox.classList.add('hidden');
-      results.classList.add('hidden');
-
-      const payload = await postJson('/api/lookup', {number});
-      if (!payload.success) {
-        errorBox.textContent = payload.error || 'Lookup failed.';
-        errorBox.classList.remove('hidden');
-        return;
-      }
-
-      const d = payload.data;
-      setBool('r-valid', d.is_valid);
-      setBool('r-possible', d.is_possible);
-      setText('r-type', d.number_type);
-      setText('r-cc', '+' + d.country_code);
-      setText('r-national', d.national_number);
-      setText('r-region', d.region_code);
-      setText('r-location', d.location);
-      setText('r-carrier', d.carrier);
-      setText('r-tz', d.timezones.length ? d.timezones.join(', ') : 'Unknown');
-      setText('r-e164', d.formats.e164);
-      setText('r-intl', d.formats.international);
-      setText('r-nat', d.formats.national);
-      setText('r-rfc', d.formats.rfc3966);
-      results.classList.remove('hidden');
-    });
-
-    // ---- IP tracker ----
-    const ipForm = document.getElementById('ip-form');
-    const ipError = document.getElementById('ip-error');
-    const ipResults = document.getElementById('ip-results');
-    const ipInput = document.getElementById('ip');
-
-    async function runIpLookup(ip) {
-      ipError.classList.add('hidden');
-      ipResults.classList.add('hidden');
-      const payload = await postJson('/api/ip-lookup', {ip});
-      if (!payload.success) {
-        ipError.textContent = payload.error || 'IP lookup failed.';
-        ipError.classList.remove('hidden');
-        return;
-      }
-      const d = payload.data;
-      setText('ip-country', (d.flag_emoji ? d.flag_emoji + ' ' : '') + d.country + ' (' + d.country_code + ')');
-      setText('ip-region', d.region);
-      setText('ip-city', d.city);
-      setText('ip-postal', d.postal);
-      setText('ip-coords', (d.latitude !== null && d.longitude !== null) ? d.latitude + ', ' + d.longitude : 'Unknown');
-      const maps = document.getElementById('ip-maps');
-      if (d.maps_url) { maps.href = d.maps_url; maps.textContent = 'Open in Google Maps'; }
-      else { maps.removeAttribute('href'); maps.textContent = 'Not available'; }
-      setText('ip-addr', d.ip);
-      setText('ip-type', d.type);
-      setText('ip-isp', d.isp);
-      setText('ip-org', d.org);
-      setText('ip-asn', 'AS' + d.asn);
-      setText('ip-domain', d.domain);
-      setText('ip-tz', d.timezone_id + ' (' + d.timezone_abbr + ', UTC' + d.timezone_utc + ')');
-      setText('ip-time', d.current_time);
-      setText('ip-calling', '+' + d.calling_code);
-      setText('ip-capital', d.capital);
-      ipResults.classList.remove('hidden');
+    function statusClass(status) {
+      return 'badge st-' + status.toLowerCase().replace(/ /g, '-');
+    }
+    function dlRow(term, value) {
+      return '<dt>' + esc(term) + '</dt><dd>' + esc(value) + '</dd>';
     }
 
-    ipForm.addEventListener('submit', async (e) => {
+    var MODULE_ORDER = ['number', 'carrier', 'technical', 'ovh', 'public_osint', 'ip', 'numverify', 'googlecse', 'ignorant'];
+    var MODULE_LABELS = {
+      number: 'A. Number Information',
+      carrier: 'B. Carrier Information',
+      technical: 'D. Technical Information',
+      ovh: 'OVH Number Zones',
+      public_osint: 'C. Public OSINT',
+      ip: 'E. IP Intelligence',
+      numverify: 'Numverify Lookup',
+      googlecse: 'Google Custom Search',
+      ignorant: 'Account Registration Check'
+    };
+    var lastReport = null;
+    var lastInputs = null;
+
+    // ---- module card rendering ----
+    function moduleBody(mod) {
+      var d = mod.data || {};
+      var html = '';
+      if (mod.name === 'number' && d.e164) {
+        html += '<dl>' + dlRow('International', d.international) + dlRow('National', d.national)
+          + dlRow('E.164', d.e164) + dlRow('RFC 3966', d.rfc3966) + dlRow('Country', d.country + ' (' + d.region_code + ')')
+          + dlRow('Country code', '+' + d.country_code) + dlRow('National number', d.national_number)
+          + dlRow('Type', d.number_type) + dlRow('Valid', d.is_valid ? 'Yes' : 'No')
+          + dlRow('Possible', d.is_possible ? 'Yes' : 'No') + '</dl>';
+      } else if (mod.name === 'carrier' && d.carrier) {
+        html += '<dl>' + dlRow('Carrier', d.carrier) + '</dl>';
+      } else if (mod.name === 'technical' && d.timezones) {
+        html += '<dl>' + dlRow('Timezone(s)', d.timezones.length ? d.timezones.join(', ') : 'Unknown')
+          + dlRow('Geographic description', d.geographic_description)
+          + dlRow('Region', d.country + ' (' + d.region_code + ')') + '</dl>';
+        if (d.limitations && d.limitations.length) {
+          html += '<details><summary>Source limitations</summary><ul>'
+            + d.limitations.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></details>';
+        }
+      } else if (mod.name === 'ovh' && d.found) {
+        html += '<dl>' + dlRow('Number range', d.number_range) + dlRow('City', d.city)
+          + dlRow('ZIP code', d.zip_code) + dlRow('Country', d.country) + '</dl>';
+      } else if (mod.name === 'ovh' && d.number_range) {
+        html += '<dl>' + dlRow('Number range checked', d.number_range) + dlRow('Found in OVH zones', 'No') + '</dl>';
+      } else if (mod.name === 'public_osint' && d.categories) {
+        html += '<p class="hint">' + d.total_links + ' search links generated. Open a link to see what Google has publicly indexed — nothing was fetched by PhoneIntel.</p>';
+        Object.keys(d.categories).forEach(function (cat) {
+          var group = d.categories[cat];
+          html += '<details><summary>' + esc(cat.replace(/_/g, ' ')) + ' (' + group.count + ' links)</summary><ul class="dork-list">';
+          group.links.forEach(function (l) {
+            html += '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.dork) + '</a></li>';
+          });
+          html += '</ul></details>';
+        });
+      } else if (mod.name === 'ip' && d.ip) {
+        html += '<dl>' + dlRow('IP', d.ip + ' (' + d.type + ')') + dlRow('Country', d.country + ' (' + d.country_code + ')')
+          + dlRow('Region', d.region) + dlRow('City', d.city) + dlRow('Coordinates', (d.latitude != null ? d.latitude + ', ' + d.longitude : 'Unknown'))
+          + dlRow('ISP', d.isp) + dlRow('Organisation', d.org) + dlRow('ASN', 'AS' + d.asn)
+          + dlRow('Timezone', d.timezone_id + ' (' + d.timezone_utc + ')') + dlRow('Local time', d.current_time) + '</dl>';
+        if (d.maps_url) html += '<p><a href="' + esc(d.maps_url) + '" target="_blank" rel="noopener">Open in Google Maps</a></p>';
+      }
+      return html;
+    }
+
+    function moduleCard(mod, retryable) {
+      var html = '<div class="card module-card" id="mod-' + esc(mod.name) + '">'
+        + '<div class="module-head"><h2>' + esc(MODULE_LABELS[mod.name] || mod.label) + '</h2>'
+        + '<span class="' + statusClass(mod.status) + '">' + esc(mod.status) + '</span></div>'
+        + '<p class="module-meta">Source: ' + esc(mod.source) + ' · Confidence: ' + esc(mod.confidence) + ' · ' + esc(mod.timestamp) + '</p>';
+      if (mod.detail) html += '<p class="hint">' + esc(mod.detail) + '</p>';
+      if (mod.error) html += '<div class="error">' + esc(mod.error) + '</div>';
+      html += moduleBody(mod);
+      if (retryable && mod.status === 'FAILED') {
+        html += '<button type="button" class="btn-secondary retry-btn" data-module="' + esc(mod.name) + '">Retry module</button>';
+      }
+      return html + '</div>';
+    }
+
+    function renderReport(report) {
+      var s = report.summary || {};
+      setText('s-success', s.success || 0);
+      setText('s-partial', s.partial || 0);
+      setText('s-na', s.not_available || 0);
+      setText('s-failed', s.failed || 0);
+      setText('s-ns', s.not_supported || 0);
+      setText('report-meta', 'Investigation ' + report.investigation_id + ' · ' + report.timestamp
+        + ' · Number: ' + report.input.number + (report.input.ip ? ' · IP: ' + report.input.ip : '')
+        + (lastReport && lastReport.duplicate ? ' · (duplicate — served from the 60-second cache)' : ''));
+      var cards = document.getElementById('module-cards');
+      cards.innerHTML = '';
+      MODULE_ORDER.forEach(function (name) {
+        var mod = report.modules[name];
+        if (!mod) return;
+        cards.insertAdjacentHTML('beforeend', moduleCard(mod, true));
+      });
+      cards.querySelectorAll('.retry-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { retryModule(btn.dataset.module, btn); });
+      });
+      document.getElementById('inv-results').classList.remove('hidden');
+    }
+
+    async function retryModule(name, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Retrying…';
+      var payload = await postJson('/api/module/' + encodeURIComponent(name), lastInputs);
+      if (!payload.success) {
+        btn.disabled = false;
+        btn.textContent = 'Retry module';
+        var box = document.getElementById('inv-error');
+        box.textContent = payload.error || 'Retry failed.';
+        box.classList.remove('hidden');
+        return;
+      }
+      var card = document.getElementById('mod-' + name);
+      if (card) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = moduleCard(payload.module, true);
+        card.replaceWith(tmp.firstChild);
+        var newBtn = document.querySelector('#mod-' + name + ' .retry-btn');
+        if (newBtn) newBtn.addEventListener('click', function () { retryModule(name, newBtn); });
+      }
+    }
+
+    // ---- investigation form ----
+    var invForm = document.getElementById('investigate-form');
+    var invError = document.getElementById('inv-error');
+    var progressBox = document.getElementById('progress');
+    var progressList = document.getElementById('progress-list');
+    var invResults = document.getElementById('inv-results');
+    var startBtn = document.getElementById('start-btn');
+
+    invForm.addEventListener('submit', async function (e) {
       e.preventDefault();
-      await runIpLookup(ipInput.value.trim());
+      var number = document.getElementById('number').value.trim();
+      var country = document.getElementById('country').value;
+      var ip = document.getElementById('ip').value.trim();
+      var consent = document.getElementById('consent').checked;
+      invError.classList.add('hidden');
+      invResults.classList.add('hidden');
+
+      if (!consent) {
+        invError.textContent = 'Please confirm the investigation consent checkbox before starting an investigation.';
+        invError.classList.remove('hidden');
+        return;
+      }
+
+      lastInputs = {number: number, country: country, ip: ip, consent: true};
+      progressList.innerHTML = MODULE_ORDER.slice(0, 6).map(function (name) {
+        return '<li><span class="progress-dot"></span>' + esc(MODULE_LABELS[name])
+          + ' <span class="badge st-running">RUNNING</span></li>';
+      }).join('');
+      progressBox.classList.remove('hidden');
+      startBtn.disabled = true;
+      startBtn.textContent = 'Investigating…';
+
+      var payload;
+      try {
+        payload = await postJson('/api/investigate', lastInputs);
+      } catch (err) {
+        payload = {success: false, error: 'Could not reach the server. Check your connection and try again.'};
+      }
+
+      progressBox.classList.add('hidden');
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start Investigation';
+
+      if (!payload.success) {
+        invError.textContent = payload.error || 'Investigation failed.';
+        invError.classList.remove('hidden');
+        return;
+      }
+      lastReport = payload.data;
+      lastReport.duplicate = !!payload.duplicate;
+      renderReport(lastReport);
+    });
+
+    // ---- export ----
+    document.getElementById('export-json').addEventListener('click', function () {
+      if (!lastReport) return;
+      var blob = new Blob([JSON.stringify(lastReport, null, 2)], {type: 'application/json'});
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'phoneintel-' + lastReport.investigation_id + '.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    document.getElementById('export-pdf').addEventListener('click', async function () {
+      if (!lastReport) return;
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Building PDF…';
+      try {
+        var resp = await fetch('/api/export/pdf', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(lastReport)
+        });
+        if (!resp.ok) {
+          var err = await resp.json().catch(function () { return {}; });
+          throw new Error((err && err.error) || 'PDF export failed.');
+        }
+        var blob = await resp.blob();
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'phoneintel-' + lastReport.investigation_id + '.pdf';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (err) {
+        invError.textContent = err.message || 'PDF export failed.';
+        invError.classList.remove('hidden');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Export PDF';
     });
 
     // ---- show your IP ----
@@ -257,44 +412,43 @@
       if (p.success) setText('my-ip', p.data.ip);
     }).catch(function () { setText('my-ip', 'unavailable'); });
 
-    document.getElementById('use-my-ip').addEventListener('click', async function () {
-      const ip = document.getElementById('my-ip').textContent.trim();
+    document.getElementById('use-my-ip').addEventListener('click', function () {
+      var ip = document.getElementById('my-ip').textContent.trim();
       if (!ip || ip === '…' || ip === 'unavailable') return;
-      ipInput.value = ip;
-      await runIpLookup(ip);
+      document.getElementById('ip').value = ip;
     });
 
-    // ---- username tracker ----
-    const uForm = document.getElementById('username-form');
-    const uError = document.getElementById('username-error');
-    const uResults = document.getElementById('username-results');
+    // ---- username tracker (unchanged) ----
+    var uForm = document.getElementById('username-form');
+    var uError = document.getElementById('username-error');
+    var uResults = document.getElementById('username-results');
 
-    uForm.addEventListener('submit', async (e) => {
+    uForm.addEventListener('submit', async function (e) {
       e.preventDefault();
-      const username = document.getElementById('username').value.trim();
+      var username = document.getElementById('username').value.trim();
       uError.classList.add('hidden');
       uResults.classList.add('hidden');
 
-      const payload = await postJson('/api/username-lookup', {username});
+      var payload = await postJson('/api/username-lookup', {username});
       if (!payload.success) {
         uError.textContent = payload.error || 'Username check failed.';
         uError.classList.remove('hidden');
         return;
       }
 
-      const d = payload.data;
+      var d = payload.data;
       setText('u-found', d.found);
       setText('u-notfound', d.not_found);
       setText('u-unknown', d.unknown);
       setText('u-name', '@' + d.username);
-      const rows = document.getElementById('u-rows');
+      var rows = document.getElementById('u-rows');
       rows.innerHTML = '';
       d.results.forEach(function (r) {
-        const tr = document.createElement('tr');
-        const label = r.status === 'found' ? 'Found' : (r.status === 'not_found' ? 'Not found' : 'Unknown');
-        tr.innerHTML = '<td>' + r.site + '</td>' +
-          '<td><span class="status ' + r.status + '">' + label + '</span></td>' +
-          '<td><a href="' + r.url + '" target="_blank" rel="noopener">' + r.url + '</a></td>';
+        var tr = document.createElement('tr');
+        var label = r.status === 'found' ? 'Found' : (r.status === 'not_found' ? 'Not found' : 'Unknown');
+        tr.innerHTML = '<td>' + esc(r.site) + '</td>' +
+          '<td><span class="status ' + esc(r.status) + '">' + label + '</span></td>' +
+          '<td><a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url) + '</a></td>';
         rows.appendChild(tr);
       });
       uResults.classList.remove('hidden');

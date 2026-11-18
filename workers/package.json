@@ -1,0 +1,1 @@
+{"dependencies":{"google-libphonenumber":"3.2.48"},"description":"PhoneIntel investigation API as a Cloudflare Worker (free tier, no API keys).","devDependencies":{"wrangler":"^4.164.0"},"name":"phoneintel-worker","private":true,"scripts":{"deploy":"wrangler deploy","dev":"wrangler dev"},"type":"module","version":"1.0.0"}
