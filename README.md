@@ -81,6 +81,24 @@ Response:
 (`+1 202-555-0140` is from the reserved fictional 555 range — safe to
 use as a demo number. Never test with a real person's number.)
 
+## Static version (Netlify)
+
+The `netlify/` folder holds a fully static build of the same app — same
+look, same checks — that runs entirely in the browser using the
+`google-libphonenumber` JavaScript library from a CDN. `netlify.toml`
+sets the publish directory to `netlify` with no build command, so the
+repo can be imported on Netlify as-is.
+
+Static-version limits (all shown in the UI too):
+
+- **No carrier lookup** — the JavaScript library does not ship the
+  carrier mapper, so the static build reports carrier as unavailable.
+  Use the Python app above for carrier data.
+- **Timezone is approximate** — the JS library has no timezone API, so
+  timezones come from a region-level mapping, labelled approximate.
+- **Location is country-level only** (the Python app can show a
+  city/area for some numbers).
+
 ## Limits
 
 - The number must include its country code (e.g. `+92 …`, `+44 …`).

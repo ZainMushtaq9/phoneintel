@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhoneIntel — Phone Number Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Load google-libphonenumber (JS port of Google's libphonenumber) from
+    // CDN, with a fallback mirror. Everything then runs in the browser —
+    // no server, no external lookups.
+    (function () {
+      function loadLib(src, fallback) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = src;
+          s.onload = function () { resolve(); };
+          s.onerror = function () {
+            if (fallback) {
+              loadLib(fallback).then(resolve, reject);
+            } else {
+              reject(new Error('phone library failed to load'));
+            }
+          };
+          document.head.appendChild(s);
+        });
+      }
+      window.__libReady = loadLib(
+        'https://cdn.jsdelivr.net/npm/google-libphonenumber@3.2.48/dist/libphonenumber.js',
+        'https://unpkg.com/google-libphonenumber@3.2.48/dist/libphonenumber.js'
+      );
+    })();
+  </script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>&gt;_ Phone<span class="accent">Intel</span></h1>
+      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data. Runs fully in your browser. No tracking, no external lookups.</p>
+    </header>
+
+    <form id="lookup-form" autocomplete="off">
+      <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
+      <button type="submit">Analyse</button>
+    </form>
+    <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
+
+    <div id="error" class="error hidden"></div>
+
+    <section id="results" class="hidden">
+      <div class="card verdict">
+        <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
+        <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
+        <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Number</h2>
+          <dl>
+            <dt>Country code</dt><dd id="r-cc"></dd>
+            <dt>National number</dt><dd id="r-national"></dd>
+            <dt>Region</dt><dd id="r-region"></dd>
+          </dl>
+        </div>
+        <div class="card">
+          <h2>Location &amp; Network</h2>
+          <dl>
+            <dt>Country (numbering plan)</dt><dd id="r-location"></dd>
+            <dt>Carrier</dt><dd id="r-carrier"></dd>
+            <dt>Timezone(s) — approximate</dt><dd id="r-tz"></dd>
+          </dl>
+        </div>
+        <div class="card wide">
+          <h2>Formats</h2>
+          <dl>
+            <dt>E.164</dt><dd id="r-e164"></dd>
+            <dt>International</dt><dd id="r-intl"></dd>
+            <dt>National</dt><dd id="r-nat"></dd>
+            <dt>RFC 3966</dt><dd id="r-rfc"></dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>100% in-browser — analysis uses only the public numbering-plan data bundled with the google-libphonenumber library. This tool does not track live locations or check accounts on other services.</p>
+      <p>Static-version limits: carrier lookup is not included in the JavaScript library (use the Python/Flask app in this repo for carrier data); timezones are an approximate region-level mapping, not a per-number lookup; location is country-level only.</p>
+    </footer>
+  </main>
+</body>
+</html>
