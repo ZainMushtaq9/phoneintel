@@ -58,6 +58,27 @@ all offline, from data bundled with the library.
 Read-only reference clones of all four repos live in
 `~/workspace/phone-repos/` (not part of this repo).
 
+## Ignorant audit (2026-11-18)
+
+The Ignorant repository was fully audited (static code review only — no
+module was executed and no request was sent to any service) to see
+whether any of it could be safely and usefully integrated. Full report:
+[`docs/ignorant-audit.md`](docs/ignorant-audit.md).
+
+**Finding: nothing was integrated, because there is nothing safe in it
+that this app does not already do better.** Ignorant's entire functional
+content is checking whether a phone number is registered on Instagram,
+Snapchat and Amazon (login/registration-endpoint enumeration, including
+a hard-coded leaked Instagram signing key) — all prohibited here. It
+contains no phone validation, formatting or metadata logic of its own
+(no `phonenumbers` use at all); everything it was hoped to contribute is
+already covered by this app's libphonenumber-based lookup, with correct
+data. Its only separable piece, a calling-code → country table, is
+partly wrong (`44` → `JE`, `61` → `CX`, `1` → `VI`) and is superseded
+by `phonenumbers`. No `modules/ignorant_safe/` was created and no new
+UI section was added, because there is no genuinely new functionality
+to put in them.
+
 ## Run it
 
 ```bash
