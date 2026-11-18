@@ -1,16 +1,21 @@
 /* PhoneIntel static build — runs fully in the browser using
  * google-libphonenumber (JS port of Google's libphonenumber).
  *
- * No server, no external lookups, no account probing, no live
- * location tracking. Location is country-level only, from the
- * public numbering plan.
+ * Phone analysis is fully in-browser. The IP Tracker calls the free
+ * ipwho.is API directly from the browser (verified: it sends
+ * Access-Control-Allow-Origin: *, so browser fetch works); "Show Your
+ * IP" uses api.ipify.org the same way. No account probing, no live
+ * location tracking.
  *
- * Two honest limits of the JavaScript library (both shown in the UI):
+ * Honest limits (all shown in the UI):
  *  - No carrier lookup: the JS bundle does not ship the carrier
  *    mapper, so carrier is reported as unavailable here. The
  *    Python/Flask app in this repo does carrier lookup.
  *  - No timezone API: timezones come from the region-level mapping
  *    below and are labelled approximate, never exact.
+ *  - No username checking: browsers cannot read other sites' HTTP
+ *    status (CORS), so the Username Tracker tab explains that the
+ *    Python app is needed. Nothing is faked.
  */
 (function () {
   'use strict';
@@ -205,6 +210,110 @@
     });
   }
 
+  /* ---- tabs (do not need the phone library) ---- */
+  function initTabs() {
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.add('hidden'); });
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+  }
+
+  /* ---- IP tracker (browser fetch to ipwho.is; CORS verified) ---- */
+  var IPV4_RE = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+  var IPV6_RE = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
+
+  function initIp() {
+    var form = document.getElementById('ip-form');
+    var input = document.getElementById('ip');
+    var errorBox = document.getElementById('ip-error');
+    var results = document.getElementById('ip-results');
+    if (!form) return;
+
+    function showIp(d) {
+      var flag = d.flag && d.flag.emoji ? d.flag.emoji + ' ' : '';
+      var conn = d.connection || {};
+      var tz = d.timezone || {};
+      setText('ip-country', flag + (d.country || 'Unknown') + ' (' + (d.country_code || '?') + ')');
+      setText('ip-region', d.region || 'Unknown');
+      setText('ip-city', d.city || 'Unknown');
+      setText('ip-postal', d.postal || 'Unknown');
+      setText('ip-coords', (d.latitude != null && d.longitude != null)
+        ? d.latitude + ', ' + d.longitude : 'Unknown');
+      var maps = document.getElementById('ip-maps');
+      if (d.latitude != null && d.longitude != null) {
+        maps.href = 'https://www.google.com/maps/@' + d.latitude + ',' + d.longitude + ',8z';
+        maps.textContent = 'Open in Google Maps';
+      } else {
+        maps.removeAttribute('href');
+        maps.textContent = 'Not available';
+      }
+      setText('ip-addr', d.ip || 'Unknown');
+      setText('ip-type', d.type || 'Unknown');
+      setText('ip-isp', conn.isp || 'Unknown');
+      setText('ip-org', conn.org || 'Unknown');
+      setText('ip-asn', conn.asn != null ? 'AS' + conn.asn : 'Unknown');
+      setText('ip-domain', conn.domain || 'Unknown');
+      setText('ip-tz', (tz.id || 'Unknown') + ' (' + (tz.abbr || '?') + ', UTC' + (tz.utc || '?') + ')');
+      /* ipwho.is returns no current-time field; derive it from the UTC
+       * offset (seconds) it does return. */
+      var localTime = 'Unknown';
+      if (typeof tz.offset === 'number') {
+        var d2 = new Date(Date.now() + tz.offset * 1000);
+        localTime = d2.toISOString().slice(0, 16).replace('T', ' ');
+      }
+      setText('ip-time', localTime);
+      setText('ip-calling', d.calling_code ? '+' + d.calling_code : 'Unknown');
+      setText('ip-capital', d.capital || 'Unknown');
+      results.classList.remove('hidden');
+    }
+
+    function runIpLookup(ip) {
+      errorBox.classList.add('hidden');
+      results.classList.add('hidden');
+      if (!IPV4_RE.test(ip) && !IPV6_RE.test(ip)) {
+        errorBox.textContent = "'" + ip + "' is not a valid IP address.";
+        errorBox.classList.remove('hidden');
+        return;
+      }
+      fetch('https://ipwho.is/' + encodeURIComponent(ip))
+        .then(function (resp) {
+          if (!resp.ok) throw new Error('IP lookup service returned HTTP ' + resp.status + '.');
+          return resp.json();
+        })
+        .then(function (d) {
+          if (!d.success) throw new Error(d.message || 'IP lookup failed.');
+          showIp(d);
+        })
+        .catch(function (err) {
+          errorBox.textContent = err && err.message ? err.message : 'IP lookup failed.';
+          errorBox.classList.remove('hidden');
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      runIpLookup(input.value.trim());
+    });
+
+    /* Show Your IP (api.ipify.org allows browser fetch; CORS verified). */
+    fetch('https://api.ipify.org/?format=json')
+      .then(function (r) { return r.json(); })
+      .then(function (p) { if (p.ip) setText('my-ip', p.ip); })
+      .catch(function () { setText('my-ip', 'unavailable'); });
+
+    document.getElementById('use-my-ip').addEventListener('click', function () {
+      var ip = document.getElementById('my-ip').textContent.trim();
+      if (!ip || ip === '…' || ip === 'unavailable') return;
+      input.value = ip;
+      runIpLookup(ip);
+    });
+  }
+
   function showLibError() {
     var errorBox = document.getElementById('error');
     if (errorBox) {
@@ -222,6 +331,10 @@
   }
 
   if (typeof document === 'undefined') return;
+
+  /* Tabs and the IP tracker do not need the phone library. */
+  initTabs();
+  initIp();
 
   if (window.__libReady && window.__libReady.then) {
     window.__libReady.then(function () {

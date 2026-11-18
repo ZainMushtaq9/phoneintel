@@ -45,7 +45,7 @@ form {
   margin-top: 1.5rem;
 }
 
-input[type="tel"] {
+input[type="tel"], input[type="text"] {
   flex: 1;
   padding: 0.85rem 1rem;
   font-size: 1.05rem;
@@ -57,7 +57,106 @@ input[type="tel"] {
   outline: none;
 }
 
-input[type="tel"]:focus { border-color: var(--accent); }
+input[type="tel"]:focus, input[type="text"]:focus { border-color: var(--accent); }
+
+/* ---- tabs ---- */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.tab-btn:hover { color: var(--text); background: var(--card); }
+
+.tab-btn.active {
+  color: var(--accent);
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.tab-panel { margin-top: 0.25rem; }
+
+/* ---- small inline link-style button ---- */
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-btn:hover { background: none; color: var(--accent-dim); }
+
+/* ---- username results table ---- */
+.site-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.site-table th {
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.5rem 0.6rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-table td {
+  padding: 0.55rem 0.6rem 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  word-break: break-all;
+}
+
+.site-table tr:last-child td { border-bottom: none; }
+
+.site-table a { color: var(--accent); text-decoration: none; }
+.site-table a:hover { text-decoration: underline; }
+
+.status {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status.found { background: #0d2b1a; color: var(--accent); }
+.status.not_found { background: #2a1214; color: #ffb3b3; }
+.status.unknown { background: #2a2510; color: #ffe08a; }
+
+a { color: var(--accent); }
+
+.note {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 1rem;
+}
 
 button {
   padding: 0.85rem 1.6rem;

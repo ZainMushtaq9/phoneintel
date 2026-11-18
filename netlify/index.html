@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="style.css">
   <script>
     // Load google-libphonenumber (JS port of Google's libphonenumber) from
-    // CDN, with a fallback mirror. Everything then runs in the browser —
-    // no server, no external lookups.
+    // CDN, with a fallback mirror. Phone analysis then runs in the browser —
+    // no server, no external lookups for the phone tab.
     (function () {
       function loadLib(src, fallback) {
         return new Promise(function (resolve, reject) {
@@ -37,56 +37,126 @@
   <main class="container">
     <header>
       <h1>&gt;_ Phone<span class="accent">Intel</span></h1>
-      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data. Runs fully in your browser. No tracking, no external lookups.</p>
+      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data. Runs fully in your browser. No tracking, no account probing.</p>
     </header>
 
-    <form id="lookup-form" autocomplete="off">
-      <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
-      <button type="submit">Analyse</button>
-    </form>
-    <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="tab-phone">Phone Lookup</button>
+      <button class="tab-btn" data-tab="tab-ip">IP Tracker</button>
+      <button class="tab-btn" data-tab="tab-username">Username Tracker</button>
+    </nav>
 
-    <div id="error" class="error hidden"></div>
+    <!-- ======================= PHONE ======================= -->
+    <section id="tab-phone" class="tab-panel">
+      <form id="lookup-form" autocomplete="off">
+        <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
+        <button type="submit">Analyse</button>
+      </form>
+      <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
 
-    <section id="results" class="hidden">
-      <div class="card verdict">
-        <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
-        <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
-        <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
-      </div>
+      <div id="error" class="error hidden"></div>
 
-      <div class="grid">
-        <div class="card">
-          <h2>Number</h2>
-          <dl>
-            <dt>Country code</dt><dd id="r-cc"></dd>
-            <dt>National number</dt><dd id="r-national"></dd>
-            <dt>Region</dt><dd id="r-region"></dd>
-          </dl>
+      <section id="results" class="hidden">
+        <div class="card verdict">
+          <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
         </div>
-        <div class="card">
-          <h2>Location &amp; Network</h2>
-          <dl>
-            <dt>Country (numbering plan)</dt><dd id="r-location"></dd>
-            <dt>Carrier</dt><dd id="r-carrier"></dd>
-            <dt>Timezone(s) — approximate</dt><dd id="r-tz"></dd>
-          </dl>
+
+        <div class="grid">
+          <div class="card">
+            <h2>Number</h2>
+            <dl>
+              <dt>Country code</dt><dd id="r-cc"></dd>
+              <dt>National number</dt><dd id="r-national"></dd>
+              <dt>Region</dt><dd id="r-region"></dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h2>Location &amp; Network</h2>
+            <dl>
+              <dt>Country (numbering plan)</dt><dd id="r-location"></dd>
+              <dt>Carrier</dt><dd id="r-carrier"></dd>
+              <dt>Timezone(s) — approximate</dt><dd id="r-tz"></dd>
+            </dl>
+          </div>
+          <div class="card wide">
+            <h2>Formats</h2>
+            <dl>
+              <dt>E.164</dt><dd id="r-e164"></dd>
+              <dt>International</dt><dd id="r-intl"></dd>
+              <dt>National</dt><dd id="r-nat"></dd>
+              <dt>RFC 3966</dt><dd id="r-rfc"></dd>
+            </dl>
+          </div>
         </div>
-        <div class="card wide">
-          <h2>Formats</h2>
-          <dl>
-            <dt>E.164</dt><dd id="r-e164"></dd>
-            <dt>International</dt><dd id="r-intl"></dd>
-            <dt>National</dt><dd id="r-nat"></dd>
-            <dt>RFC 3966</dt><dd id="r-rfc"></dd>
-          </dl>
+      </section>
+    </section>
+
+    <!-- ======================= IP ======================= -->
+    <section id="tab-ip" class="tab-panel hidden">
+      <form id="ip-form" autocomplete="off">
+        <input type="text" id="ip" name="ip" placeholder="8.8.8.8" required>
+        <button type="submit">Track IP</button>
+      </form>
+      <p class="hint">Enter a public IP address (IPv4 or IPv6). Geolocation comes from the free ipwho.is API — it shows where the IP is registered, not a live position.
+        <span id="my-ip-line">Your IP: <span id="my-ip">…</span> <button type="button" id="use-my-ip" class="link-btn">look it up</button></span>
+      </p>
+
+      <div id="ip-error" class="error hidden"></div>
+
+      <section id="ip-results" class="hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Location</h2>
+            <dl>
+              <dt>Country</dt><dd id="ip-country"></dd>
+              <dt>Region</dt><dd id="ip-region"></dd>
+              <dt>City</dt><dd id="ip-city"></dd>
+              <dt>Postal</dt><dd id="ip-postal"></dd>
+              <dt>Coordinates</dt><dd id="ip-coords"></dd>
+              <dt>Map</dt><dd><a id="ip-maps" href="#" target="_blank" rel="noopener">Open in Google Maps</a></dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h2>Network</h2>
+            <dl>
+              <dt>IP</dt><dd id="ip-addr"></dd>
+              <dt>Type</dt><dd id="ip-type"></dd>
+              <dt>ISP</dt><dd id="ip-isp"></dd>
+              <dt>Organisation</dt><dd id="ip-org"></dd>
+              <dt>ASN</dt><dd id="ip-asn"></dd>
+              <dt>Domain</dt><dd id="ip-domain"></dd>
+            </dl>
+          </div>
+          <div class="card wide">
+            <h2>More</h2>
+            <dl>
+              <dt>Timezone</dt><dd id="ip-tz"></dd>
+              <dt>Local time</dt><dd id="ip-time"></dd>
+              <dt>Calling code</dt><dd id="ip-calling"></dd>
+              <dt>Capital</dt><dd id="ip-capital"></dd>
+            </dl>
+          </div>
         </div>
+      </section>
+    </section>
+
+    <!-- ======================= USERNAME ======================= -->
+    <section id="tab-username" class="tab-panel hidden">
+      <div class="note">
+        <strong>Username checking needs the Python app.</strong><br>
+        Checking whether a username exists on another site requires reading that
+        site's HTTP response — and browsers block cross-site response checks
+        (CORS), so a static page cannot do this check honestly. Run the Flask
+        app in this repo (<code>python app.py</code>) and use its Username
+        Tracker tab instead — it checks 19 sites from the server side.
       </div>
     </section>
 
     <footer>
-      <p>100% in-browser — analysis uses only the public numbering-plan data bundled with the google-libphonenumber library. This tool does not track live locations or check accounts on other services.</p>
-      <p>Static-version limits: carrier lookup is not included in the JavaScript library (use the Python/Flask app in this repo for carrier data); timezones are an approximate region-level mapping, not a per-number lookup; location is country-level only.</p>
+      <p>Phone analysis is 100% in-browser — it uses only the public numbering-plan data bundled with the google-libphonenumber library. IP lookups use the free ipwho.is API. This tool does not track live locations, check accounts on other services, or extract phone numbers from social media.</p>
+      <p>Static-version limits: carrier lookup is not included in the JavaScript library (use the Python/Flask app in this repo for carrier data); timezones are an approximate region-level mapping, not a per-number lookup; location is country-level only; username checking is not possible from a static page (see the Username Tracker tab).</p>
     </footer>
   </main>
 </body>

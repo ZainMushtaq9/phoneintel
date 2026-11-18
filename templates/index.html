@@ -10,62 +10,152 @@
   <main class="container">
     <header>
       <h1>&gt;_ Phone<span class="accent">Intel</span></h1>
-      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data. No tracking, no external lookups.</p>
+      <p class="tagline">Offline phone number intelligence — powered by Google's libphonenumber data — plus GhostTrack-style IP and username lookups. No tracking, no account probing.</p>
     </header>
 
-    <form id="lookup-form" autocomplete="off">
-      <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
-      <button type="submit">Analyse</button>
-    </form>
-    <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="tab-phone">Phone Lookup</button>
+      <button class="tab-btn" data-tab="tab-ip">IP Tracker</button>
+      <button class="tab-btn" data-tab="tab-username">Username Tracker</button>
+    </nav>
 
-    <div id="error" class="error hidden"></div>
+    <!-- ======================= PHONE ======================= -->
+    <section id="tab-phone" class="tab-panel">
+      <form id="lookup-form" autocomplete="off">
+        <input type="tel" id="number" name="number" placeholder="+1 202-555-0140" required>
+        <button type="submit">Analyse</button>
+      </form>
+      <p class="hint">Enter a number with its country code, e.g. +92 300 1234567, +44 20 7946 0958.</p>
 
-    <section id="results" class="hidden">
-      <div class="card verdict">
-        <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
-        <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
-        <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
-      </div>
+      <div id="error" class="error hidden"></div>
 
-      <div class="grid">
-        <div class="card">
-          <h2>Number</h2>
-          <dl>
-            <dt>Country code</dt><dd id="r-cc"></dd>
-            <dt>National number</dt><dd id="r-national"></dd>
-            <dt>Region</dt><dd id="r-region"></dd>
-          </dl>
+      <section id="results" class="hidden">
+        <div class="card verdict">
+          <div class="verdict-item"><span class="label">Valid</span><span id="r-valid" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Possible</span><span id="r-possible" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Type</span><span id="r-type" class="value"></span></div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h2>Number</h2>
+            <dl>
+              <dt>Country code</dt><dd id="r-cc"></dd>
+              <dt>National number</dt><dd id="r-national"></dd>
+              <dt>Region</dt><dd id="r-region"></dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h2>Location &amp; Network</h2>
+            <dl>
+              <dt>Location (numbering plan)</dt><dd id="r-location"></dd>
+              <dt>Carrier</dt><dd id="r-carrier"></dd>
+              <dt>Timezone(s)</dt><dd id="r-tz"></dd>
+            </dl>
+          </div>
+          <div class="card wide">
+            <h2>Formats</h2>
+            <dl>
+              <dt>E.164</dt><dd id="r-e164"></dd>
+              <dt>International</dt><dd id="r-intl"></dd>
+              <dt>National</dt><dd id="r-nat"></dd>
+              <dt>RFC 3966</dt><dd id="r-rfc"></dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ======================= IP ======================= -->
+    <section id="tab-ip" class="tab-panel hidden">
+      <form id="ip-form" autocomplete="off">
+        <input type="text" id="ip" name="ip" placeholder="8.8.8.8" required>
+        <button type="submit">Track IP</button>
+      </form>
+      <p class="hint">Enter a public IP address (IPv4 or IPv6). Geolocation comes from the free ipwho.is API — it shows where the IP is registered, not a live position.
+        <span id="my-ip-line">Your IP: <span id="my-ip">…</span> <button type="button" id="use-my-ip" class="link-btn">look it up</button></span>
+      </p>
+
+      <div id="ip-error" class="error hidden"></div>
+
+      <section id="ip-results" class="hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Location</h2>
+            <dl>
+              <dt>Country</dt><dd id="ip-country"></dd>
+              <dt>Region</dt><dd id="ip-region"></dd>
+              <dt>City</dt><dd id="ip-city"></dd>
+              <dt>Postal</dt><dd id="ip-postal"></dd>
+              <dt>Coordinates</dt><dd id="ip-coords"></dd>
+              <dt>Map</dt><dd><a id="ip-maps" href="#" target="_blank" rel="noopener">Open in Google Maps</a></dd>
+            </dl>
+          </div>
+          <div class="card">
+            <h2>Network</h2>
+            <dl>
+              <dt>IP</dt><dd id="ip-addr"></dd>
+              <dt>Type</dt><dd id="ip-type"></dd>
+              <dt>ISP</dt><dd id="ip-isp"></dd>
+              <dt>Organisation</dt><dd id="ip-org"></dd>
+              <dt>ASN</dt><dd id="ip-asn"></dd>
+              <dt>Domain</dt><dd id="ip-domain"></dd>
+            </dl>
+          </div>
+          <div class="card wide">
+            <h2>More</h2>
+            <dl>
+              <dt>Timezone</dt><dd id="ip-tz"></dd>
+              <dt>Local time</dt><dd id="ip-time"></dd>
+              <dt>Calling code</dt><dd id="ip-calling"></dd>
+              <dt>Capital</dt><dd id="ip-capital"></dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ======================= USERNAME ======================= -->
+    <section id="tab-username" class="tab-panel hidden">
+      <form id="username-form" autocomplete="off">
+        <input type="text" id="username" name="username" placeholder="github" required>
+        <button type="submit">Check Username</button>
+      </form>
+      <p class="hint">Checks whether the username's public profile URL exists on 19 social sites. Status check only — no login, no page content is read. "Found" means the profile URL responded (HTTP 200); some sites return 200 even for missing profiles.</p>
+
+      <div id="username-error" class="error hidden"></div>
+
+      <section id="username-results" class="hidden">
+        <div class="card verdict">
+          <div class="verdict-item"><span class="label">Found</span><span id="u-found" class="value yes"></span></div>
+          <div class="verdict-item"><span class="label">Not found</span><span id="u-notfound" class="value"></span></div>
+          <div class="verdict-item"><span class="label">Could not verify</span><span id="u-unknown" class="value"></span></div>
         </div>
         <div class="card">
-          <h2>Location &amp; Network</h2>
-          <dl>
-            <dt>Location (numbering plan)</dt><dd id="r-location"></dd>
-            <dt>Carrier</dt><dd id="r-carrier"></dd>
-            <dt>Timezone(s)</dt><dd id="r-tz"></dd>
-          </dl>
+          <h2>Results for <span id="u-name"></span></h2>
+          <table class="site-table">
+            <thead><tr><th>Site</th><th>Status</th><th>Profile URL</th></tr></thead>
+            <tbody id="u-rows"></tbody>
+          </table>
         </div>
-        <div class="card wide">
-          <h2>Formats</h2>
-          <dl>
-            <dt>E.164</dt><dd id="r-e164"></dd>
-            <dt>International</dt><dd id="r-intl"></dd>
-            <dt>National</dt><dd id="r-nat"></dd>
-            <dt>RFC 3966</dt><dd id="r-rfc"></dd>
-          </dl>
-        </div>
-      </div>
+      </section>
     </section>
 
     <footer>
-      <p>100% offline — analysis uses only the public numbering-plan data bundled with the <code>phonenumbers</code> library. This tool does not track live locations or check accounts on other services.</p>
+      <p>Phone analysis is 100% offline — it uses only the public numbering-plan data bundled with the <code>phonenumbers</code> library. IP lookups use the free ipwho.is API; username checks only test whether a public profile URL responds. This tool does not track live locations, check accounts on other services, or extract phone numbers from social media.</p>
     </footer>
   </main>
 
   <script>
-    const form = document.getElementById('lookup-form');
-    const errorBox = document.getElementById('error');
-    const results = document.getElementById('results');
+    // ---- tabs ----
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.add('hidden'); });
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.remove('hidden');
+      });
+    });
 
     function setText(id, value) {
       document.getElementById(id).textContent = value;
@@ -76,6 +166,19 @@
       el.classList.toggle('yes', value);
       el.classList.toggle('no', !value);
     }
+    async function postJson(url, body) {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+      return resp.json();
+    }
+
+    // ---- phone lookup (unchanged) ----
+    const form = document.getElementById('lookup-form');
+    const errorBox = document.getElementById('error');
+    const results = document.getElementById('results');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -83,13 +186,7 @@
       errorBox.classList.add('hidden');
       results.classList.add('hidden');
 
-      const resp = await fetch('/api/lookup', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({number})
-      });
-      const payload = await resp.json();
-
+      const payload = await postJson('/api/lookup', {number});
       if (!payload.success) {
         errorBox.textContent = payload.error || 'Lookup failed.';
         errorBox.classList.remove('hidden');
@@ -111,6 +208,96 @@
       setText('r-nat', d.formats.national);
       setText('r-rfc', d.formats.rfc3966);
       results.classList.remove('hidden');
+    });
+
+    // ---- IP tracker ----
+    const ipForm = document.getElementById('ip-form');
+    const ipError = document.getElementById('ip-error');
+    const ipResults = document.getElementById('ip-results');
+    const ipInput = document.getElementById('ip');
+
+    async function runIpLookup(ip) {
+      ipError.classList.add('hidden');
+      ipResults.classList.add('hidden');
+      const payload = await postJson('/api/ip-lookup', {ip});
+      if (!payload.success) {
+        ipError.textContent = payload.error || 'IP lookup failed.';
+        ipError.classList.remove('hidden');
+        return;
+      }
+      const d = payload.data;
+      setText('ip-country', (d.flag_emoji ? d.flag_emoji + ' ' : '') + d.country + ' (' + d.country_code + ')');
+      setText('ip-region', d.region);
+      setText('ip-city', d.city);
+      setText('ip-postal', d.postal);
+      setText('ip-coords', (d.latitude !== null && d.longitude !== null) ? d.latitude + ', ' + d.longitude : 'Unknown');
+      const maps = document.getElementById('ip-maps');
+      if (d.maps_url) { maps.href = d.maps_url; maps.textContent = 'Open in Google Maps'; }
+      else { maps.removeAttribute('href'); maps.textContent = 'Not available'; }
+      setText('ip-addr', d.ip);
+      setText('ip-type', d.type);
+      setText('ip-isp', d.isp);
+      setText('ip-org', d.org);
+      setText('ip-asn', 'AS' + d.asn);
+      setText('ip-domain', d.domain);
+      setText('ip-tz', d.timezone_id + ' (' + d.timezone_abbr + ', UTC' + d.timezone_utc + ')');
+      setText('ip-time', d.current_time);
+      setText('ip-calling', '+' + d.calling_code);
+      setText('ip-capital', d.capital);
+      ipResults.classList.remove('hidden');
+    }
+
+    ipForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await runIpLookup(ipInput.value.trim());
+    });
+
+    // ---- show your IP ----
+    fetch('/api/my-ip').then(function (r) { return r.json(); }).then(function (p) {
+      if (p.success) setText('my-ip', p.data.ip);
+    }).catch(function () { setText('my-ip', 'unavailable'); });
+
+    document.getElementById('use-my-ip').addEventListener('click', async function () {
+      const ip = document.getElementById('my-ip').textContent.trim();
+      if (!ip || ip === '…' || ip === 'unavailable') return;
+      ipInput.value = ip;
+      await runIpLookup(ip);
+    });
+
+    // ---- username tracker ----
+    const uForm = document.getElementById('username-form');
+    const uError = document.getElementById('username-error');
+    const uResults = document.getElementById('username-results');
+
+    uForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      uError.classList.add('hidden');
+      uResults.classList.add('hidden');
+
+      const payload = await postJson('/api/username-lookup', {username});
+      if (!payload.success) {
+        uError.textContent = payload.error || 'Username check failed.';
+        uError.classList.remove('hidden');
+        return;
+      }
+
+      const d = payload.data;
+      setText('u-found', d.found);
+      setText('u-notfound', d.not_found);
+      setText('u-unknown', d.unknown);
+      setText('u-name', '@' + d.username);
+      const rows = document.getElementById('u-rows');
+      rows.innerHTML = '';
+      d.results.forEach(function (r) {
+        const tr = document.createElement('tr');
+        const label = r.status === 'found' ? 'Found' : (r.status === 'not_found' ? 'Not found' : 'Unknown');
+        tr.innerHTML = '<td>' + r.site + '</td>' +
+          '<td><span class="status ' + r.status + '">' + label + '</span></td>' +
+          '<td><a href="' + r.url + '" target="_blank" rel="noopener">' + r.url + '</a></td>';
+        rows.appendChild(tr);
+      });
+      uResults.classList.remove('hidden');
     });
   </script>
 </body>
